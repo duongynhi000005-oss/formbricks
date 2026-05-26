@@ -1,6 +1,8 @@
 import type { TSurvey } from "@/modules/survey/list/types/surveys";
 
-export type TV3SurveyListItem = Pick<
+export type TV3SurveyCreator = Pick<NonNullable<TSurvey["creator"]>, "name">;
+
+type TV3SurveyListItemBase = Pick<
   TSurvey,
   | "id"
   | "name"
@@ -11,8 +13,21 @@ export type TV3SurveyListItem = Pick<
   | "createdAt"
   | "updatedAt"
   | "responseCount"
-  | "creator"
 >;
+
+export type TV3SurveyListItem = TV3SurveyListItemBase & {
+  creator: TV3SurveyCreator | null;
+};
+
+export function serializeV3SurveyCreator(creator: TSurvey["creator"]): TV3SurveyCreator | null {
+  if (!creator) {
+    return null;
+  }
+
+  return {
+    name: creator.name,
+  };
+}
 
 /**
  * Keep the v3 API contract isolated from internal persistence naming.
@@ -29,6 +44,6 @@ export function serializeV3SurveyListItem(survey: TSurvey): TV3SurveyListItem {
     createdAt: survey.createdAt,
     updatedAt: survey.updatedAt,
     responseCount: survey.responseCount,
-    creator: survey.creator,
+    creator: serializeV3SurveyCreator(survey.creator),
   };
 }

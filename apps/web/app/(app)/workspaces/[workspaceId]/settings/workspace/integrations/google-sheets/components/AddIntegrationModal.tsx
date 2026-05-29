@@ -24,7 +24,7 @@ import {
   GOOGLE_SHEET_INTEGRATION_INSUFFICIENT_PERMISSION,
   GOOGLE_SHEET_INTEGRATION_INVALID_GRANT,
 } from "@/lib/googleSheet/constants";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { recallToHeadline } from "@/lib/utils/recall";
 import { getElementsFromBlocks } from "@/modules/survey/lib/client-utils";
 import { AdditionalIntegrationSettings } from "@/modules/ui/components/additional-integration-settings";
@@ -183,7 +183,7 @@ export const AddIntegrationModal = ({
         workspaceId,
         integrationData: googleSheetIntegrationData,
       });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }
@@ -230,7 +230,7 @@ export const AddIntegrationModal = ({
         workspaceId,
         integrationData: googleSheetIntegrationData,
       });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }

@@ -8,7 +8,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { TActionClass, TActionClassInput } from "@formbricks/types/action-classes";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { buildActionObject } from "@/modules/survey/editor/lib/action-builder";
 import {
   createActionClassZodResolver,
@@ -91,7 +91,7 @@ export const ActionSettingsTab = ({
         actionClassId: actionClass.id,
         updatedAction: updatedAction,
       });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }
@@ -109,7 +109,7 @@ export const ActionSettingsTab = ({
     try {
       setIsDeletingAction(true);
       const result = await deleteActionClassAction({ actionClassId: actionClass.id });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }

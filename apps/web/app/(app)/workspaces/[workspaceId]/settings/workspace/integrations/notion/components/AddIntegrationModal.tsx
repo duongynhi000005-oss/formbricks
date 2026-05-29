@@ -22,7 +22,7 @@ import {
   createEmptyMapping,
 } from "@/app/(app)/workspaces/[workspaceId]/settings/workspace/integrations/notion/components/MappingRow";
 import NotionLogo from "@/images/notion.png";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { recallToHeadline } from "@/lib/utils/recall";
 import { getElementsFromBlocks } from "@/modules/survey/lib/client-utils";
 import { Button } from "@/modules/ui/components/button";
@@ -222,7 +222,7 @@ export const AddIntegrationModal = ({
         workspaceId,
         integrationData: notionIntegrationData,
       });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }
@@ -248,7 +248,7 @@ export const AddIntegrationModal = ({
         workspaceId,
         integrationData: notionIntegrationData,
       });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }

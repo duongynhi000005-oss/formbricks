@@ -48,6 +48,23 @@ export const getFormattedErrorMessage = (result: {
   return message;
 };
 
+type TActionErrorResult = {
+  serverError?: string;
+  validationErrors?: unknown;
+};
+
+const hasValidationErrors = (validationErrors: unknown): boolean => {
+  if (!validationErrors) return false;
+  if (Array.isArray(validationErrors)) return validationErrors.length > 0;
+  if (typeof validationErrors === "object") return Object.keys(validationErrors).length > 0;
+
+  return true;
+};
+
+export const hasActionError = (result?: TActionErrorResult | null): result is TActionErrorResult => {
+  return Boolean(result?.serverError || hasValidationErrors(result?.validationErrors));
+};
+
 /**
  * GET organization ID from RESOURCE ID
  */

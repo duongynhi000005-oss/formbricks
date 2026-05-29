@@ -21,7 +21,7 @@ import { createOrUpdateIntegrationAction } from "@/app/(app)/workspaces/[workspa
 import { BaseSelectDropdown } from "@/app/(app)/workspaces/[workspaceId]/settings/workspace/integrations/airtable/components/BaseSelectDropdown";
 import { fetchTables } from "@/app/(app)/workspaces/[workspaceId]/settings/workspace/integrations/airtable/lib/airtable";
 import AirtableLogo from "@/images/airtableLogo.svg";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { recallToHeadline } from "@/lib/utils/recall";
 import { getElementsFromBlocks } from "@/modules/survey/lib/client-utils";
 import { AdditionalIntegrationSettings } from "@/modules/ui/components/additional-integration-settings";
@@ -273,7 +273,7 @@ export const AddIntegrationModal = ({
         workspaceId,
         integrationData: airtableIntegrationData,
       });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }
@@ -313,7 +313,7 @@ export const AddIntegrationModal = ({
       integrationData.config.data.splice(index, 1);
 
       const result = await createOrUpdateIntegrationAction({ workspaceId, integrationData });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }

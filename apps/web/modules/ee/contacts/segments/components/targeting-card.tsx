@@ -18,7 +18,7 @@ import type { TSurvey } from "@formbricks/types/surveys/types";
 import { useWorkspace } from "@/app/(app)/workspaces/[workspaceId]/context/workspace-context";
 import { cn } from "@/lib/cn";
 import { structuredClone } from "@/lib/pollyfills/structuredClone";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import {
   cloneSegmentAction,
   createSegmentAction,
@@ -140,7 +140,7 @@ export function TargetingCard({
     try {
       if (!segment) throw new Error(t("workspace.segments.invalid_segment"));
       const result = await updateSegmentAction({ segmentId: segment.id, data });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         return;
       }

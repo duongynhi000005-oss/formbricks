@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { TMember } from "@formbricks/types/memberships";
 import { TOrganization } from "@formbricks/types/organizations";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import {
   createInviteTokenAction,
   deleteInviteAction,
@@ -42,7 +42,7 @@ export const MemberActions = ({ organization, member, invite, showDeleteButton }
         // This is an invite
 
         const result = await deleteInviteAction({ inviteId: invite?.id });
-        if (result?.serverError) {
+        if (hasActionError(result)) {
           toast.error(getFormattedErrorMessage(result));
           setIsDeleting(false);
           return;
@@ -57,7 +57,7 @@ export const MemberActions = ({ organization, member, invite, showDeleteButton }
           userId: member.userId,
           organizationId: organization.id,
         });
-        if (result?.serverError) {
+        if (hasActionError(result)) {
           toast.error(getFormattedErrorMessage(result));
           setIsDeleting(false);
           return;

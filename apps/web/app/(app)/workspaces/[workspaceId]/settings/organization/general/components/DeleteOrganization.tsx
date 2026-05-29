@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { TOrganization } from "@formbricks/types/organizations";
 import { deleteOrganizationAction } from "@/app/(app)/workspaces/[workspaceId]/settings/organization/general/actions";
 import { FORMBRICKS_ENVIRONMENT_ID_LS } from "@/lib/localStorage";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { Alert, AlertDescription } from "@/modules/ui/components/alert";
 import { Button } from "@/modules/ui/components/button";
 import { DeleteDialog } from "@/modules/ui/components/delete-dialog";
@@ -34,7 +34,7 @@ export const DeleteOrganization = ({
 
     try {
       const result = await deleteOrganizationAction({ organizationId: organization.id });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         setIsDeleting(false);
         return;

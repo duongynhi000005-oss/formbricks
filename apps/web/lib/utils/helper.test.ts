@@ -28,6 +28,7 @@ import {
   getWorkspaceIdFromSurveyId,
   getWorkspaceIdFromTagId,
   getWorkspaceIdFromWebhookId,
+  hasActionError,
   isStringMatch,
 } from "./helper";
 
@@ -89,6 +90,23 @@ describe("Helper Utilities", () => {
     test("returns empty string for undefined errors", () => {
       const result = { validationErrors: undefined };
       expect(getFormattedErrorMessage(result)).toBe("");
+    });
+  });
+
+  describe("hasActionError", () => {
+    test("returns true when server error is present", () => {
+      expect(hasActionError({ serverError: "Something went wrong" })).toBe(true);
+    });
+
+    test("returns true when validation errors are present", () => {
+      expect(hasActionError({ validationErrors: { name: { _errors: ["Required"] } } })).toBe(true);
+    });
+
+    test("returns false when result has no action errors", () => {
+      expect(hasActionError({})).toBe(false);
+      expect(hasActionError({ validationErrors: {} })).toBe(false);
+      expect(hasActionError(null)).toBe(false);
+      expect(hasActionError(undefined)).toBe(false);
     });
   });
 

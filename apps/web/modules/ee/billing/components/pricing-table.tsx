@@ -15,6 +15,7 @@ import { useWorkspace } from "@/app/(app)/workspaces/[workspaceId]/context/works
 import { SettingsCard } from "@/app/(app)/workspaces/[workspaceId]/settings/components/SettingsCard";
 import { cn } from "@/lib/cn";
 import { formatDateForDisplay } from "@/lib/utils/datetime";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { Alert, AlertButton, AlertDescription, AlertTitle } from "@/modules/ui/components/alert";
 import { Badge } from "@/modules/ui/components/badge";
 import { Button } from "@/modules/ui/components/button";
@@ -251,10 +252,21 @@ export const PricingTable = ({
     }
   };
 
+  const getBillingActionErrorMessage = (response?: {
+    serverError?: string;
+    validationErrors?: unknown;
+  }) => {
+    if (response?.serverError) {
+      return getActionErrorMessage(response.serverError, t);
+    }
+
+    return getFormattedErrorMessage(response ?? {}) || t("common.something_went_wrong_please_try_again");
+  };
+
   const openBillingPortal = async () => {
     const response = await manageSubscriptionAction({ workspaceId });
-    if (response?.serverError) {
-      toast.error(getActionErrorMessage(response.serverError, t));
+    if (hasActionError(response)) {
+      toast.error(getBillingActionErrorMessage(response));
       return;
     }
     if (response?.data && typeof response.data === "string") {
@@ -269,8 +281,8 @@ export const PricingTable = ({
     try {
       persistWorkspaceId();
       const response = await createTrialPaymentCheckoutAction({ workspaceId });
-      if (response?.serverError) {
-        toast.error(getActionErrorMessage(response.serverError, t));
+      if (hasActionError(response)) {
+        toast.error(getBillingActionErrorMessage(response));
         return;
       }
       if (response?.data && typeof response.data === "string") {
@@ -288,8 +300,8 @@ export const PricingTable = ({
     setIsRetryingStripeSetup(true);
     try {
       const response = await retryStripeSetupAction({ organizationId: organization.id });
-      if (response?.serverError) {
-        toast.error(getActionErrorMessage(response.serverError, t));
+      if (hasActionError(response)) {
+        toast.error(getBillingActionErrorMessage(response));
         return;
       }
       if (response?.data) {
@@ -324,8 +336,8 @@ export const PricingTable = ({
       targetPlan: plan,
       targetInterval: interval,
     });
-    if (response?.serverError) {
-      toast.error(getActionErrorMessage(response.serverError, t));
+    if (hasActionError(response)) {
+      toast.error(getBillingActionErrorMessage(response));
       return;
     }
 
@@ -348,8 +360,8 @@ export const PricingTable = ({
       }
 
       const response = await changeBillingPlanAction(getPlanChangePayload(workspaceId, plan, interval));
-      if (response?.serverError) {
-        toast.error(getActionErrorMessage(response.serverError, t));
+      if (hasActionError(response)) {
+        toast.error(getBillingActionErrorMessage(response));
         return;
       }
       toast.success(getPlanChangeSuccessMessage(response?.data?.mode, t));
@@ -366,8 +378,8 @@ export const PricingTable = ({
     setIsPlanActionPending("undo");
     try {
       const response = await undoPendingPlanChangeAction({ workspaceId });
-      if (response?.serverError) {
-        toast.error(getActionErrorMessage(response.serverError, t));
+      if (hasActionError(response)) {
+        toast.error(getBillingActionErrorMessage(response));
         return;
       }
       if (response?.data) {

@@ -9,7 +9,7 @@ import { TOrganizationRole } from "@formbricks/types/memberships";
 import { TOrganization } from "@formbricks/types/organizations";
 import { FORMBRICKS_ENVIRONMENT_ID_LS } from "@/lib/localStorage";
 import { getAccessFlags } from "@/lib/membership/utils";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { TOrganizationTeam } from "@/modules/ee/teams/team-list/types/team";
 import { inviteUserAction, leaveOrganizationAction } from "@/modules/organization/settings/teams/actions";
 import { InviteMemberModal } from "@/modules/organization/settings/teams/components/invite-member/invite-member-modal";
@@ -72,7 +72,7 @@ export const OrganizationActions = ({
     setLoading(true);
     try {
       const result = await leaveOrganizationAction({ organizationId: organization.id });
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         setLoading(false);
         return;

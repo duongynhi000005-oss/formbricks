@@ -10,7 +10,7 @@ import type { TBaseFilter, TSegment, TSegmentWithSurveyRefs } from "@formbricks/
 import { ZSegmentFilters } from "@formbricks/types/segment";
 import { cn } from "@/lib/cn";
 import { structuredClone } from "@/lib/pollyfills/structuredClone";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, hasActionError } from "@/lib/utils/helper";
 import { deleteSegmentAction, updateSegmentAction } from "@/modules/ee/contacts/segments/actions";
 import { Button } from "@/modules/ui/components/button";
 import { ConfirmDeleteSegmentModal } from "@/modules/ui/components/confirm-delete-segment-modal";
@@ -113,7 +113,7 @@ export function SegmentSettings({
       setIsDeletingSegment(true);
       const result = await deleteSegmentAction({ segmentId: segment.id });
 
-      if (result?.serverError) {
+      if (hasActionError(result)) {
         toast.error(getFormattedErrorMessage(result));
         setIsDeletingSegment(false);
         return;

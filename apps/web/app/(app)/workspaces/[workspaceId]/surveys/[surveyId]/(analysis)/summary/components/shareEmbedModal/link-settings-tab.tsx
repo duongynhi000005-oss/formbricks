@@ -9,6 +9,7 @@ import { TI18nString } from "@formbricks/types/i18n";
 import { TSurvey, TSurveyMetadata } from "@formbricks/types/surveys/types";
 import { useSurvey } from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/context/survey-context";
 import { createI18nString, extractLanguageCodes, getEnabledLanguages } from "@/lib/i18n/utils";
+import { throwIfActionReturnedError } from "@/lib/utils/helper";
 import { updateSurveyAction } from "@/modules/survey/editor/actions";
 import { Button } from "@/modules/ui/components/button";
 import { FileInput } from "@/modules/ui/components/file-input";
@@ -130,16 +131,21 @@ export const LinkSettingsTab = ({ isReadOnly, locale, isStorageConfigured }: Lin
       metadata: updatedSurveyMetadata,
     };
 
-    const result = await updateSurveyAction(updatedSurvey);
+    try {
+      const result = await updateSurveyAction(updatedSurvey);
+      throwIfActionReturnedError(result);
 
-    if (result?.data) {
-      toast.success(t("workspace.surveys.edit.settings_saved_successfully"));
-      reset(data);
-    } else {
-      toast.error(t("common.something_went_wrong_please_try_again"));
+      if (result?.data) {
+        toast.success(t("workspace.surveys.edit.settings_saved_successfully"));
+        reset(data);
+      } else {
+        toast.error(t("common.something_went_wrong_please_try_again"));
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("common.something_went_wrong_please_try_again"));
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsSaving(false);
   };
 
   const inputFields: {

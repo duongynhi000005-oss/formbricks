@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { TSurvey } from "@formbricks/types/surveys/types";
 import { useSurvey } from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/context/survey-context";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, throwIfActionReturnedError } from "@/lib/utils/helper";
 import { updateSurveyAction } from "@/modules/survey/editor/actions";
 import {
   Select,
@@ -23,26 +23,31 @@ export const SurveyStatusDropdown = () => {
   const isScheduled = survey.status === "paused" && survey.publishOn !== null;
 
   const handleStatusChange = async (status: TSurvey["status"]) => {
-    const updateSurveyActionResponse = await updateSurveyAction({ ...survey, status });
+    try {
+      const updateSurveyActionResponse = await updateSurveyAction({ ...survey, status });
+      throwIfActionReturnedError(updateSurveyActionResponse);
 
-    if (updateSurveyActionResponse?.data) {
-      const { publishOn, status: resultingStatus } = updateSurveyActionResponse.data;
-      const isResultScheduled = resultingStatus === "paused" && publishOn !== null;
-      const statusToToastMessage: Partial<Record<TSurvey["status"], string>> = {
-        inProgress: t("common.survey_live"),
-        paused: isResultScheduled ? t("common.survey_scheduled") : t("common.survey_paused"),
-        completed: t("common.survey_completed"),
-      };
+      if (updateSurveyActionResponse?.data) {
+        const { publishOn, status: resultingStatus } = updateSurveyActionResponse.data;
+        const isResultScheduled = resultingStatus === "paused" && publishOn !== null;
+        const statusToToastMessage: Partial<Record<TSurvey["status"], string>> = {
+          inProgress: t("common.survey_live"),
+          paused: isResultScheduled ? t("common.survey_scheduled") : t("common.survey_paused"),
+          completed: t("common.survey_completed"),
+        };
 
-      const toastMessage = statusToToastMessage[resultingStatus];
-      if (toastMessage) {
-        toast.success(toastMessage);
+        const toastMessage = statusToToastMessage[resultingStatus];
+        if (toastMessage) {
+          toast.success(toastMessage);
+        }
+
+        router.refresh();
+      } else {
+        const errorMessage = getFormattedErrorMessage(updateSurveyActionResponse);
+        toast.error(errorMessage || t("common.something_went_wrong_please_try_again"));
       }
-
-      router.refresh();
-    } else {
-      const errorMessage = getFormattedErrorMessage(updateSurveyActionResponse);
-      toast.error(errorMessage);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("common.something_went_wrong_please_try_again"));
     }
   };
 

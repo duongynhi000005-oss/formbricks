@@ -10,7 +10,7 @@ import { useWorkspace } from "@/app/(app)/workspaces/[workspaceId]/context/works
 import { updateOrganizationAISettingsAction } from "@/app/(app)/workspaces/[workspaceId]/settings/organization/general/actions";
 import { getDisplayedOrganizationAISettingValue, getOrganizationAIEnablementState } from "@/lib/ai/utils";
 import { getAccessFlags } from "@/lib/membership/utils";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, throwIfActionReturnedError } from "@/lib/utils/helper";
 import { AdvancedOptionToggle } from "@/modules/ui/components/advanced-option-toggle";
 import { Alert, AlertDescription } from "@/modules/ui/components/alert";
 import { type ModalButton, UpgradePrompt } from "@/modules/ui/components/upgrade-prompt";
@@ -63,12 +63,13 @@ export const AISettingsToggle = ({
         organizationId: organization.id,
         data: { isAISmartToolsEnabled: checked },
       });
+      throwIfActionReturnedError(response);
 
       if (response?.data) {
         toast.success(t("workspace.settings.general.ai_settings_updated_successfully"));
         router.refresh();
       } else {
-        toast.error(getFormattedErrorMessage(response));
+        toast.error(getFormattedErrorMessage(response) || t("common.something_went_wrong_please_try_again"));
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("common.something_went_wrong_please_try_again"));

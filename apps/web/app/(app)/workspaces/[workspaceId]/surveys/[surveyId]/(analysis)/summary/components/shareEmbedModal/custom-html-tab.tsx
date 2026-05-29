@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { TSurvey } from "@formbricks/types/surveys/types";
 import { useSurvey } from "@/app/(app)/workspaces/[workspaceId]/surveys/[surveyId]/context/survey-context";
 import { cn } from "@/lib/cn";
+import { throwIfActionReturnedError } from "@/lib/utils/helper";
 import { updateSurveyAction } from "@/modules/survey/editor/actions";
 import { Alert, AlertDescription } from "@/modules/ui/components/alert";
 import { Button } from "@/modules/ui/components/button";
@@ -64,16 +65,21 @@ export const CustomHtmlTab = ({ workspaceCustomScripts, isReadOnly }: CustomHtml
       customHeadScriptsMode: data.customHeadScriptsMode,
     };
 
-    const result = await updateSurveyAction(updatedSurvey);
+    try {
+      const result = await updateSurveyAction(updatedSurvey);
+      throwIfActionReturnedError(result);
 
-    if (result?.data) {
-      toast.success(t("workspace.surveys.share.custom_html.saved_successfully"));
-      reset(data);
-    } else {
-      toast.error(t("common.something_went_wrong_please_try_again"));
+      if (result?.data) {
+        toast.success(t("workspace.surveys.share.custom_html.saved_successfully"));
+        reset(data);
+      } else {
+        toast.error(t("common.something_went_wrong_please_try_again"));
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("common.something_went_wrong_please_try_again"));
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsSaving(false);
   };
 
   return (

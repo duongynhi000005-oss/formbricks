@@ -48,6 +48,19 @@ export const getFormattedErrorMessage = (result: {
   return message;
 };
 
+export const throwIfActionReturnedError = (result?: {
+  serverError?: string;
+  validationErrors?: unknown;
+}): void => {
+  if (!result) return;
+
+  const errorMessage = getFormattedErrorMessage(result);
+
+  if (errorMessage) {
+    throw new Error(errorMessage);
+  }
+};
+
 /**
  * GET organization ID from RESOURCE ID
  */

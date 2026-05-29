@@ -10,7 +10,7 @@ import type { TBaseFilter, TSegment, TSegmentWithSurveyRefs } from "@formbricks/
 import { ZSegmentFilters } from "@formbricks/types/segment";
 import { cn } from "@/lib/cn";
 import { structuredClone } from "@/lib/pollyfills/structuredClone";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, throwIfActionReturnedError } from "@/lib/utils/helper";
 import { deleteSegmentAction, updateSegmentAction } from "@/modules/ee/contacts/segments/actions";
 import { Button } from "@/modules/ui/components/button";
 import { ConfirmDeleteSegmentModal } from "@/modules/ui/components/confirm-delete-segment-modal";
@@ -86,19 +86,20 @@ export function SegmentSettings({
           filters: segment.filters,
         },
       });
+      throwIfActionReturnedError(data);
 
       if (!data?.data) {
         const errorMessage = getFormattedErrorMessage(data);
 
-        toast.error(errorMessage);
+        toast.error(errorMessage || t("common.something_went_wrong_please_try_again"));
         setIsUpdatingSegment(false);
         return;
       }
 
       setIsUpdatingSegment(false);
-      toast.success("Segment updated successfully!");
-    } catch (err: any) {
-      toast.error(t("common.something_went_wrong_please_try_again"));
+      toast.success(t("workspace.segments.segment_saved_successfully"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.something_went_wrong_please_try_again"));
       setIsUpdatingSegment(false);
       return;
     }
@@ -112,9 +113,10 @@ export function SegmentSettings({
     try {
       setIsDeletingSegment(true);
       const result = await deleteSegmentAction({ segmentId: segment.id });
+      throwIfActionReturnedError(result);
 
-      if (result?.serverError) {
-        toast.error(getFormattedErrorMessage(result));
+      if (!result?.data) {
+        toast.error(getFormattedErrorMessage(result) || t("common.something_went_wrong_please_try_again"));
         setIsDeletingSegment(false);
         return;
       }
@@ -122,8 +124,8 @@ export function SegmentSettings({
       setIsDeletingSegment(false);
       toast.success(t("workspace.segments.segment_deleted_successfully"));
       handleResetState();
-    } catch (err: any) {
-      toast.error(t("common.something_went_wrong_please_try_again"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.something_went_wrong_please_try_again"));
     }
 
     setIsDeletingSegment(false);

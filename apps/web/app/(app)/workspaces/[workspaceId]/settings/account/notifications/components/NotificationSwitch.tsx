@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { TUserNotificationSettings } from "@formbricks/types/user";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, throwIfActionReturnedError } from "@/lib/utils/helper";
 import { Switch } from "@/modules/ui/components/switch";
 import { updateNotificationSettingsAction } from "../actions";
 
@@ -56,21 +56,33 @@ export const NotificationSwitch = ({
       };
     }
 
-    const updatedNotificationSettingsActionResponse = await updateNotificationSettingsAction({
-      notificationSettings: updatedNotificationSettings,
-    });
-    if (updatedNotificationSettingsActionResponse?.data) {
-      toast.success(t("workspace.settings.notifications.notification_settings_updated"), {
-        id: "notification-switch",
+    try {
+      const updatedNotificationSettingsActionResponse = await updateNotificationSettingsAction({
+        notificationSettings: updatedNotificationSettings,
       });
-      router.refresh();
-    } else {
-      const errorMessage = getFormattedErrorMessage(updatedNotificationSettingsActionResponse);
-      toast.error(errorMessage, {
-        id: "notification-switch",
-      });
+      throwIfActionReturnedError(updatedNotificationSettingsActionResponse);
+
+      if (updatedNotificationSettingsActionResponse?.data) {
+        toast.success(t("workspace.settings.notifications.notification_settings_updated"), {
+          id: "notification-switch",
+        });
+        router.refresh();
+      } else {
+        const errorMessage = getFormattedErrorMessage(updatedNotificationSettingsActionResponse);
+        toast.error(errorMessage || t("common.something_went_wrong_please_try_again"), {
+          id: "notification-switch",
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("common.something_went_wrong_please_try_again"),
+        {
+          id: "notification-switch",
+        }
+      );
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {

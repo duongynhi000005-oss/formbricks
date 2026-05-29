@@ -29,6 +29,7 @@ import {
   getWorkspaceIdFromTagId,
   getWorkspaceIdFromWebhookId,
   isStringMatch,
+  throwIfActionReturnedError,
 } from "./helper";
 
 // Mock all service functions
@@ -89,6 +90,30 @@ describe("Helper Utilities", () => {
     test("returns empty string for undefined errors", () => {
       const result = { validationErrors: undefined };
       expect(getFormattedErrorMessage(result)).toBe("");
+    });
+  });
+
+  describe("throwIfActionReturnedError", () => {
+    test("throws the formatted server error when present", () => {
+      expect(() =>
+        throwIfActionReturnedError({
+          serverError: "Something went wrong while executing the operation.",
+        })
+      ).toThrow("Something went wrong while executing the operation.");
+    });
+
+    test("throws formatted validation errors when present", () => {
+      expect(() =>
+        throwIfActionReturnedError({
+          validationErrors: {
+            email: { _errors: ["Email is invalid"] },
+          },
+        })
+      ).toThrow("Email is invalid");
+    });
+
+    test("does not throw for successful action responses", () => {
+      expect(() => throwIfActionReturnedError({})).not.toThrow();
     });
   });
 

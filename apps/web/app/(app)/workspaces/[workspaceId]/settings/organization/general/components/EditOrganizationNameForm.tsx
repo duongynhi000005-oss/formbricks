@@ -9,7 +9,7 @@ import { TOrganizationRole } from "@formbricks/types/memberships";
 import { TOrganization, ZOrganization } from "@formbricks/types/organizations";
 import { updateOrganizationNameAction } from "@/app/(app)/workspaces/[workspaceId]/settings/organization/general/actions";
 import { getAccessFlags } from "@/lib/membership/utils";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, throwIfActionReturnedError } from "@/lib/utils/helper";
 import { Alert, AlertDescription } from "@/modules/ui/components/alert";
 import { Button } from "@/modules/ui/components/button";
 import {
@@ -51,16 +51,17 @@ export const EditOrganizationNameForm = ({ organization, membershipRole }: EditO
         organizationId: organization.id,
         data: { name },
       });
+      throwIfActionReturnedError(updatedOrganizationResponse);
 
       if (updatedOrganizationResponse?.data) {
         toast.success(t("workspace.settings.general.organization_name_updated_successfully"));
         form.reset({ name: updatedOrganizationResponse.data.name });
       } else {
         const errorMessage = getFormattedErrorMessage(updatedOrganizationResponse);
-        toast.error(errorMessage);
+        toast.error(errorMessage || t("common.something_went_wrong_please_try_again"));
       }
     } catch (err) {
-      toast.error(`Error: ${err instanceof Error ? err.message : "Unknown error occurred"}`);
+      toast.error(err instanceof Error ? err.message : t("common.something_went_wrong_please_try_again"));
     }
   };
 

@@ -48,6 +48,12 @@ export const getFormattedErrorMessage = (result: {
   return message;
 };
 
+export const throwIfServerError = (result?: { serverError?: string } | null): void => {
+  if (result?.serverError) {
+    throw new Error(result.serverError);
+  }
+};
+
 /**
  * GET organization ID from RESOURCE ID
  */

@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { getFormattedErrorMessage } from "@/lib/utils/helper";
+import { getFormattedErrorMessage, throwIfServerError } from "@/lib/utils/helper";
 import { inviteOrganizationMemberAction } from "@/modules/setup/organization/[organizationId]/invite/actions";
 import {
   type TInviteMembersFormSchema,
@@ -43,14 +43,18 @@ export const InviteMembers = ({ IS_SMTP_CONFIGURED, organizationId }: InviteMemb
           name: member.name,
           organizationId,
         });
+        throwIfServerError(inviteResponse);
+
         if (inviteResponse?.data) {
           toast.success(t("setup.invite.invitation_sent_to_email", { email: member.email }));
         } else {
           const errorMessage = getFormattedErrorMessage(inviteResponse);
           toast.error(errorMessage);
         }
-      } catch {
-        toast.error(`${t("setup.invite.failed_to_invite")} ${member.email}.`);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : `${t("setup.invite.failed_to_invite")} ${member.email}.`;
+        toast.error(message);
       }
     }
 

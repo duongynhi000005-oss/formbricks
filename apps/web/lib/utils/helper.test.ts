@@ -29,6 +29,7 @@ import {
   getWorkspaceIdFromTagId,
   getWorkspaceIdFromWebhookId,
   isStringMatch,
+  throwIfServerError,
 } from "./helper";
 
 // Mock all service functions
@@ -89,6 +90,20 @@ describe("Helper Utilities", () => {
     test("returns empty string for undefined errors", () => {
       const result = { validationErrors: undefined };
       expect(getFormattedErrorMessage(result)).toBe("");
+    });
+  });
+
+  describe("throwIfServerError", () => {
+    test("throws the server error message when present", () => {
+      expect(() => throwIfServerError({ serverError: "Something went wrong" })).toThrow(
+        "Something went wrong"
+      );
+    });
+
+    test("does not throw for successful or empty results", () => {
+      expect(() => throwIfServerError({})).not.toThrow();
+      expect(() => throwIfServerError(null)).not.toThrow();
+      expect(() => throwIfServerError(undefined)).not.toThrow();
     });
   });
 
